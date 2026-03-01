@@ -1,189 +1,115 @@
-// ─── knowledge-refresh.js ─────────────────────────────────────────────────────
-// Extracts topics from QUICK_PROMPTS, fetches SAP Help docs, caches in DB.
-// Usage: node scripts/knowledge-refresh.js
+'use strict';
+require('dotenv').config({ path: '../.env' });
+const fetch = require('node-fetch');
 
-import { createRequire } from 'module';
-import { fileURLToPath } from 'url';
-import path from 'path';
-import fs from 'fs';
+const BACKEND = process.env.BACKEND_URL || 'https://sap-sage-production.up.railway.app';
 
-const require = createRequire(import.meta.url);
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const TOPICS = [
+  'SAP Cloud Integration CPI iFlow configuration',
+  'CPI Groovy script error handling',
+  'SAP API Management BTP policy',
+  'SAP Event Mesh topic subscription',
+  'S/4HANA OData V4 released APIs',
+  'SAP RAP BDEF behavior definition',
+  'SAP RAP draft handling',
+  'ABAP Clean Core guidelines',
+  'SAP BTP Connectivity Service Cloud Connector',
+  'SAP ECC Plant Maintenance ASANWEE',
+  'SAP ECC IDoc partner profile configuration',
+  'SAP SuccessFactors OData API authentication',
+  'SAP Ariba procurement integration API',
+  'SAP CAP Node.js service development',
+  'SAP HANA Cloud database connection',
+  'SAP Fiori Elements list report annotations',
+  'SAP BTP Authorization Trust Management',
+  'S/4HANA Business Events outbound configuration',
+  'SAP Integration Advisor mapping guidelines',
+  'CPI adapter SFTP configuration',
+  'SAP BTP Destination Service configuration',
+  'SAP OData CSRF token handling',
+  'SAP CPI message processing log monitoring',
+  'SAP ABAP function module RFC enabled',
+  'SAP S/4HANA Business Partner API',
+  'SAP Purchase Order OData API',
+  'SAP Plant Maintenance notification API',
+  'SAP CPI exception subprocess error handling',
+  'SAP API Management developer portal',
+  'SAP Event Mesh queue subscription',
+];
 
-const dotenv = require('dotenv');
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
+async function checkFresh(topic) {
+  try {
+    const res = await fetch(`${BACKEND}/api/knowledge/${encodeURIComponent(topic)}`);
+    const data = await res.json();
+    return data?.count > 0;
+  } catch { return false; }
+}
 
-const { Pool } = require('pg');
-const nodeFetch = require('node-fetch');
+async function store(topic, content, sourceUrl) {
+  try {
+    await fetch(`${BACKEND}/api/knowledge`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic, content, sourceUrl, source: 'sap-help-auto' }),
+    });
+  } catch (e) {
+    console.error(`  Failed to store: ${e.message}`);
+  }
+}
 
-const API_BASE = process.env.VITE_API_URL || 'http://localhost:3001';
+async function searchSapHelp(query) {
+  try {
+    const url = `https://help.sap.com/http.svc/search?q=${encodeURIComponent(query)}&language=en&product=`;
+    const res = await fetch(url, { timeout: 8000 });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const hits = (data.hits || []).slice(0, 3);
+    if (!hits.length) return null;
+    return {
+      content: hits.map(h => `${h.title}: ${(h.content || h.description || '').slice(0, 300)}`).join(' | '),
+      sourceUrl: hits[0].url || hits[0].link || 'https://help.sap.com',
+    };
+  } catch { return null; }
+}
 
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : false,
-});
+async function run() {
+  console.log(`\nSAP Sage Knowledge Refresh`);
+  console.log(`Backend: ${BACKEND}`);
+  console.log(`Topics:  ${TOPICS.length}`);
+  console.log('─'.repeat(50));
 
-// ─── Load QUICK_PROMPTS from constants.js ─────────────────────────────────────
-// constants.js is an ES module with a large export — we read it as text and
-// extract the QUICK_PROMPTS object via regex to avoid full transpilation.
-function extractTopicsFromConstants() {
-    const constantsPath = path.resolve(__dirname, '../src/constants.js');
-    if (!fs.existsSync(constantsPath)) {
-        console.error('❌  Could not find src/constants.js');
-        return [];
+  let cached = 0, fresh = 0, errors = 0;
+
+  for (let i = 0; i < TOPICS.length; i++) {
+    const topic = TOPICS[i];
+    process.stdout.write(`[${String(i+1).padStart(2)}/${TOPICS.length}] ${topic.slice(0, 45).padEnd(45)} `);
+
+    const isFresh = await checkFresh(topic);
+    if (isFresh) {
+      console.log('↩ already fresh');
+      fresh++;
+      continue;
     }
 
-    const text = fs.readFileSync(constantsPath, 'utf8');
-
-    // Find all strings inside QUICK_PROMPTS — grab quoted strings after array brackets
-    const prompts = [];
-    const strRegex = /'([^']{10,150})'/g;
-    const qpStart = text.indexOf('QUICK_PROMPTS');
-    if (qpStart === -1) return [];
-
-    const section = text.slice(qpStart, qpStart + 60000); // up to 60k chars
-    let match;
-    while ((match = strRegex.exec(section)) !== null) {
-        const str = match[1].trim();
-        // Filter obvious non-prompt strings (section names, IDs, etc.)
-        if (str.length > 15 && str.includes(' ') && !str.startsWith('#') && !/^[A-Z_]+$/.test(str)) {
-            prompts.push(str);
-        }
+    const result = await searchSapHelp(topic);
+    if (result) {
+      await store(topic, result.content, result.sourceUrl);
+      console.log('✓ cached');
+      cached++;
+    } else {
+      console.log('✗ no results');
+      errors++;
     }
 
-    return prompts;
+    // Small delay to avoid rate limiting
+    await new Promise(r => setTimeout(r, 500));
+  }
+
+  console.log('─'.repeat(50));
+  console.log(`✓ Newly cached: ${cached}`);
+  console.log(`↩ Already fresh: ${fresh}`);
+  console.log(`✗ No results: ${errors}`);
+  console.log(`\nDone.`);
 }
 
-// ─── Extract topic keyword from a prompt ──────────────────────────────────────
-function extractTopic(prompt) {
-    // Take first 3 meaningful words, strip question marks/punctuation
-    return prompt
-        .replace(/[?!,.:'"]/g, '')
-        .split(' ')
-        .filter(w => w.length > 2)
-        .slice(0, 3)
-        .join(' ')
-        .toLowerCase();
-}
-
-// ─── Fetch from SAP Help API ──────────────────────────────────────────────────
-async function fetchSapHelp(topic) {
-    try {
-        const url = `https://help.sap.com/api/search?query=${encodeURIComponent(topic)}&language=en&state=PRODUCTION`;
-        const res = await nodeFetch(url, {
-            headers: { Accept: 'application/json', 'User-Agent': 'SAP-Sage-Bot/1.0' },
-            timeout: 12000,
-        });
-        if (!res.ok) return null;
-        const data = await res.json();
-        const hits = data.hits || data.results || [];
-        if (!hits.length) return null;
-
-        const top = hits[0];
-        return {
-            title: top.title || topic,
-            content: (top.excerpt || top.description || top.title || '').slice(0, 1000),
-            source_url: top.url || top.link || '',
-            source: 'sap-help',
-        };
-    } catch {
-        return null;
-    }
-}
-
-// ─── Check if topic is already fresh (within 7 days) ─────────────────────────
-async function isTopicFresh(client, topic) {
-    const r = await client.query(
-        `SELECT id FROM knowledge_cache
-     WHERE topic ILIKE $1 AND fetched_at > NOW() - INTERVAL '7 days'
-     LIMIT 1`,
-        [`%${topic}%`]
-    );
-    return r.rows.length > 0;
-}
-
-// ─── Store knowledge item via API ─────────────────────────────────────────────
-async function storeKnowledge(item) {
-    try {
-        const res = await nodeFetch(`${API_BASE}/api/knowledge`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                topic: item.title,
-                content: item.content,
-                source_url: item.source_url,
-                source: item.source,
-            }),
-            timeout: 8000,
-        });
-        return res.ok;
-    } catch {
-        return false;
-    }
-}
-
-// ─── Main ─────────────────────────────────────────────────────────────────────
-async function main() {
-    console.log('\n🔄  SAP Sage — Knowledge Refresh\n');
-
-    const prompts = extractTopicsFromConstants();
-    const rawTopics = prompts.map(extractTopic);
-    // Deduplicate
-    const topics = [...new Set(rawTopics)].filter(Boolean);
-
-    console.log(`  Found ${topics.length} unique topics from QUICK_PROMPTS\n`);
-
-    const client = await pool.connect();
-    let cached = 0, fresh = 0, errors = 0;
-
-    try {
-        for (let i = 0; i < topics.length; i++) {
-            const topic = topics[i];
-            const progress = `[${String(i + 1).padStart(String(topics.length).length)}/${topics.length}]`;
-
-            // Check freshness
-            if (await isTopicFresh(client, topic)) {
-                process.stdout.write(`  ${progress} ⏭  Already fresh: ${topic}\n`);
-                fresh++;
-                continue;
-            }
-
-            process.stdout.write(`  ${progress} 🔍 Fetching: ${topic}...`);
-            const item = await fetchSapHelp(topic);
-
-            if (!item) {
-                process.stdout.write(' no results\n');
-                errors++;
-                continue;
-            }
-
-            const ok = await storeKnowledge(item);
-            if (ok) {
-                process.stdout.write(` cached ✓\n`);
-                cached++;
-            } else {
-                process.stdout.write(` store failed\n`);
-                errors++;
-            }
-
-            // Rate-limit: 200ms between requests
-            await new Promise(r => setTimeout(r, 200));
-        }
-    } finally {
-        client.release();
-        await pool.end();
-    }
-
-    console.log('\n─────────────────────────────────────────');
-    console.log(`  ✅  Cached:       ${cached} topics`);
-    console.log(`  ⏭   Already fresh: ${fresh} topics`);
-    console.log(`  ❌  Errors:       ${errors}`);
-    console.log('─────────────────────────────────────────\n');
-
-    process.exit(errors > topics.length * 0.5 ? 1 : 0);
-}
-
-main().catch(err => {
-    console.error('❌  Knowledge refresh failed:', err.message);
-    process.exit(1);
-});
+run();

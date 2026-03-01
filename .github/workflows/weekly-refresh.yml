@@ -2,47 +2,38 @@ name: Weekly Knowledge Refresh
 
 on:
   schedule:
-    - cron: "0 2 * * 0"   # 2 AM UTC every Sunday
-  workflow_dispatch:        # Manual trigger button in GitHub Actions UI
+    - cron: '0 2 * * 0'  # Every Sunday at 2am UTC
+  workflow_dispatch:       # Manual trigger button in GitHub UI
 
 jobs:
   refresh:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: "npm"
-
-      - name: Install root dependencies
-        run: npm ci
+          node-version: '20'
 
       - name: Install backend dependencies
-        run: cd backend && npm ci
+        run: cd backend && npm install
 
+      - name: Install script dependencies
+        run: cd backend && npm install
+        
       - name: Run knowledge refresh
         run: node scripts/knowledge-refresh.js
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          BACKEND_URL: ${{ secrets.BACKEND_URL || 'https://sap-sage-production.up.railway.app' }}
 
-      - name: Build frontend
-        run: npm run build
-
-      - name: Configure Git
+      - name: Commit if changes
         run: |
           git config user.email "bot@sap-sage.ai"
           git config user.name "SAP Sage Bot"
-
-      - name: Commit and push changes
-        run: |
           git add -A
           git diff --staged --quiet || git commit -m "auto: weekly knowledge refresh $(date +%Y-%m-%d)"
           git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
