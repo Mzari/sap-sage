@@ -1,84 +1,64 @@
-// ─── migrate.js ───────────────────────────────────────────────────────────────
-// Creates all SAP Sage PostgreSQL tables. Safe to run multiple times.
-// Usage: node scripts/migrate.js
-
-import { createRequire } from 'module';
-import { fileURLToPath } from 'url';
-import path from 'path';
-
-const require = createRequire(import.meta.url);
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-// Load .env from parent directory
-const dotenv = require('dotenv');
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
-
+'use strict';
+require('dotenv').config({ path: '../.env' });
 const { Pool } = require('pg');
 
+if (!process.env.DATABASE_URL) {
+  console.error('ERROR: DATABASE_URL not set in .env');
+  process.exit(1);
+}
+
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : false,
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL.includes('railway') || process.env.DATABASE_URL.includes('neon')
+    ? { rejectUnauthorized: false } : false,
 });
 
-const TABLES = [
-    {
-        name: 'sessions',
-        sql: `
-      CREATE TABLE IF NOT EXISTS sessions (
-        id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        title       TEXT,
-        sap_context JSONB,
-        created_at  TIMESTAMP DEFAULT NOW()
-      );
-    `,
-    },
-    {
-        name: 'messages',
-        sql: `
-      CREATE TABLE IF NOT EXISTS messages (
-        id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        session_id UUID REFERENCES sessions(id) ON DELETE CASCADE,
-        role       TEXT,
-        content    TEXT,
-        tool_calls JSONB,
-        citations  JSONB,
-        created_at TIMESTAMP DEFAULT NOW()
-      );
-    `,
-    },
-    {
-        name: 'knowledge_cache',
-        sql: `
-      CREATE TABLE IF NOT EXISTS knowledge_cache (
-        id         SERIAL PRIMARY KEY,
-        topic      TEXT,
-        content    TEXT,
-        source_url TEXT,
-        source     TEXT,
-        fetched_at TIMESTAMP DEFAULT NOW()
-      );
-    `,
-    },
-];
-
 async function migrate() {
-    const client = await pool.connect();
-    try {
-        console.log('\n🗄  SAP Sage — Database Migration\n');
-        for (const table of TABLES) {
-            process.stdout.write(`  Creating table: ${table.name}... `);
-            await client.query(table.sql);
-            console.log('done ✓');
-        }
-        console.log('\n✅  All tables ready.\n');
-        process.exit(0);
-    } catch (err) {
-        console.error('\n❌  Migration failed:', err.message);
-        process.exit(1);
-    } finally {
-        client.release();
-        await pool.end();
-    }
+  console.log('Running SAP Sage migrations...');
+  try {
+    await pool.query('CREATE EXTENSION IF NOT EXISTS "pgcrypto"');
+    console.log('✓ pgcrypto extension');
+
+    await pool.query(`CREATE TABLE IF NOT EXISTS sessions (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      title TEXT,
+      sap_context JSONB DEFAULT '{}',
+      created_at TIMESTAMP DEFAULT NOW()
+    )`);
+    console.log('✓ sessions table');
+
+    await pool.query(`CREATE TABLE IF NOT EXISTS messages (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      session_id UUID REFERENCES sessions(id) ON DELETE CASCADE,
+      role TEXT NOT NULL,
+      content TEXT,
+      tool_calls JSONB DEFAULT '[]',
+      citations JSONB DEFAULT '[]',
+      created_at TIMESTAMP DEFAULT NOW()
+    )`);
+    console.log('✓ messages table');
+
+    await pool.query(`CREATE TABLE IF NOT EXISTS knowledge_cache (
+      id SERIAL PRIMARY KEY,
+      topic TEXT NOT NULL,
+      content TEXT,
+      source_url TEXT,
+      source TEXT,
+      fetched_at TIMESTAMP DEFAULT NOW()
+    )`);
+    console.log('✓ knowledge_cache table');
+
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_messages_session ON messages(session_id)');
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_knowledge_topic ON knowledge_cache(topic)');
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_sessions_created ON sessions(created_at DESC)');
+    console.log('✓ indexes');
+
+    console.log('\n✓ Migration complete');
+    process.exit(0);
+  } catch (e) {
+    console.error('Migration failed:', e.message);
+    process.exit(1);
+  }
 }
 
 migrate();

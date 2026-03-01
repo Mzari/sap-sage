@@ -1,13 +1,29 @@
+# Dependencies
 node_modules/
+backend/node_modules/
+
+# Build output
 dist/
+
+# Environment — NEVER commit these
 .env
 .env.local
 .env.production
-backend/node_modules/
+.env.*.local
+
+# Logs
 *.log
+npm-debug.log*
+
+# OS
 .DS_Store
 Thumbs.db
+
+# Editor
 .vscode/
+.idea/
+
+# Large files
+*.sqlite
 *.zip
-sap-sage/n8n/database.sqlite 
-*.sqlite 
+sap-sage/n8n/database.sqlite

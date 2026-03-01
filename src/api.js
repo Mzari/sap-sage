@@ -1,64 +1,83 @@
-// ─── SAP Sage API Client ─────────────────────────────────────────────────────
-// All functions return null on error — never throw.
+// SAP Sage v5 — Backend API client
+// All calls go to the Express backend. Falls back gracefully if backend is offline.
 
-const API_BASE =
-    (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) ||
-    'http://localhost:3001';
+const BASE = import.meta.env?.VITE_API_URL || 'http://localhost:3001';
 
-async function request(path, options = {}) {
-    try {
-        const res = await fetch(`${API_BASE}${path}`, {
-            headers: { 'Content-Type': 'application/json', ...options.headers },
-            ...options,
-        });
-        if (!res.ok) return null;
-        return await res.json();
-    } catch {
-        return null;
-    }
+// ─── Read SAP connections from localStorage (set by SystemConnector) ──────────
+function getSapConnections() {
+  try {
+    return JSON.parse(localStorage.getItem('sap-sage-connections') || '{}');
+  } catch {
+    return {};
+  }
 }
 
-/** POST /api/sessions — create a new session */
-export async function createSession(sectionId) {
-    return request('/api/sessions', {
-        method: 'POST',
-        body: JSON.stringify({ title: 'New Session', sap_context: sectionId ? { sectionId } : null }),
+// ─── Generic fetch wrapper ────────────────────────────────────────────────────
+async function api(path, opts = {}) {
+  try {
+    const res = await fetch(`${BASE}${path}`, {
+      ...opts,
+      headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
     });
+    return await res.json();
+  } catch {
+    return null; // backend offline — caller handles null
+  }
 }
 
-/** GET /api/sessions — list all sessions, newest first */
+// ─── Sessions ────────────────────────────────────────────────────────────────
+export async function createSession(sectionId = 'default') {
+  return api('/api/sessions', {
+    method: 'POST',
+    body: JSON.stringify({ sectionId }),
+  });
+}
+
 export async function getSessions() {
-    return request('/api/sessions');
+  const r = await api('/api/sessions');
+  return r || [];
 }
 
-/** GET /api/sessions/:id/messages — messages for a session */
 export async function getMessages(sessionId) {
-    if (!sessionId) return null;
-    return request(`/api/sessions/${sessionId}/messages`);
+  if (!sessionId) return [];
+  const r = await api(`/api/sessions/${sessionId}/messages`);
+  return r || [];
 }
 
-/** POST /api/chat — main chat, returns { reply, sessionId, toolCallsMade, citations } */
-export async function sendMessage({ sessionId, message, provider, model, apiKey, sectionId }) {
-    return request('/api/chat', {
-        method: 'POST',
-        body: JSON.stringify({ sessionId, message, provider, model, apiKey, sectionId }),
-    });
-}
-
-/** DELETE /api/sessions/:id */
 export async function deleteSession(id) {
-    return request(`/api/sessions/${id}`, { method: 'DELETE' });
+  return api(`/api/sessions/${id}`, { method: 'DELETE' });
 }
 
-/** POST /api/knowledge — store a knowledge item */
-export async function storeKnowledge({ topic, content, sourceUrl, source }) {
-    return request('/api/knowledge', {
-        method: 'POST',
-        body: JSON.stringify({ topic, content, source_url: sourceUrl, source }),
-    });
+// ─── Main chat — passes sapConnections from localStorage automatically ─────────
+export async function sendMessage({ sessionId, message, provider, model, apiKey, sectionId, systemPrompt }) {
+  return api('/api/chat', {
+    method: 'POST',
+    body: JSON.stringify({
+      sessionId,
+      message,
+      provider:      provider   || 'anthropic',
+      model:         model      || 'claude-sonnet-4-6',
+      apiKey:        apiKey     || '',
+      sectionId:     sectionId  || 'default',
+      systemPrompt:  systemPrompt || '',
+      sapConnections: getSapConnections(), // ← automatically attached from localStorage
+    }),
+  });
 }
 
-/** GET /health — backend health status */
+// ─── Knowledge base ───────────────────────────────────────────────────────────
+export async function storeKnowledge({ topic, content, sourceUrl, source = 'manual' }) {
+  return api('/api/knowledge', {
+    method: 'POST',
+    body: JSON.stringify({ topic, content, sourceUrl, source }),
+  });
+}
+
+export async function getKnowledge(topic) {
+  return api(`/api/knowledge/${encodeURIComponent(topic)}`);
+}
+
+// ─── Health check ─────────────────────────────────────────────────────────────
 export async function checkHealth() {
-    return request('/health');
+  return api('/health');
 }
