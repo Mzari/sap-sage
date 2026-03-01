@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Understanding AI - Complete Presentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f172a;
+            overflow: hidden;
+        }
+
+        .presentation-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            padding: 60px;
+            overflow-y: auto;
+        }
+
+        .slide.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Slide 1 - Title */
+        #slide1 {
+            background: linear-gradient(135deg, #1e3a8a 0%, #7c3aed 100%);
+            text-align: center;
+        }
+
+        #slide1 .brain-icon {
+            font-size: 120px;
+            margin-bottom: 30px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        #slide1 h1 {
+            font-size: 56px;
+            color: white;
+            font-weight: 800;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+        }
+
+        #slide1 h2 {
+            font-size: 28px;
+            color: #e0e7ff;
+            font-weight: 300;
+            margin-bottom: 40px;
+        }
+
+        #slide1 .presenter {
+            font-size: 18px;
+            color: #cbd5e1;
+            margin-top: 20px;
+        }
+
+        /* Slide 2 - Definition */
+        #slide2 {
+            background: white;
+        }
+
+        .slide-title {
+            font-size: 44px;
+            color: #1e3a8a;
+            margin-bottom: 35px;
+            font-weight: 700;
+            width: 100%;
+            text-align: center;
+        }
+
+        .definition-box {
+            max-width: 1100px;
+            width: 100%;
+        }
+
+        .main-def {
+            background: linear-gradient(135deg, #1e3a8a, #7c3aed);
+            color: white;
+            padding: 35px 50px;
+            border-radius: 20px;
+            font-size: 28px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(30, 58, 138, 0.3);
+        }
+
+        .simple-box {
+            background: #f0fdf4;
+            padding: 25px 30px;
+            border-radius: 15px;
+            border-left: 5px solid #10b981;
+            margin-bottom: 25px;
+        }
+
+        .simple-box h3 {
+            font-size: 22px;
+            color: #10b981;
+            margin-bottom: 12px;
+        }
+
+        .simple-box p {
+            font-size: 18px;
+            color: #374151;
+            line-height: 1.6;
+        }
+
+        .caps-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .cap-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-top: 4px solid #1e3a8a;
+            transition: transform 0.3s;
+        }
+
+        .cap-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .cap-card .icon {
+            font-size: 45px;
+            margin-bottom: 10px;
+        }
+
+        .cap-card h4 {
+            font-size: 17px;
+            color: #1f2937;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .cap-card p {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        /* Slide 3 - Daily Life */
+        #slide3 {
+            background: white;
+        }
+
+        .daily-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+            margin-bottom: 25px;
+        }
+
+        .daily-item {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            border-bottom: 5px solid;
+        }
+
+        .daily-item:hover {
+            transform: translateY(-8px);
+        }
+
+        .daily-item:nth-child(1) { border-bottom-color: #2563eb; }
+        .daily-item:nth-child(2) { border-bottom-color: #7c3aed; }
+        .daily-item:nth-child(3) { border-bottom-color: #ec4899; }
+        .daily-item:nth-child(4) { border-bottom-color: #10b981; }
+        .daily-item:nth-child(5) { border-bottom-color: #f59e0b; }
+        .daily-item:nth-child(6) { border-bottom-color: #ef4444; }
+
+        .daily-item .emoji {
+            font-size: 60px;
+            margin-bottom: 12px;
+        }
+
+        .daily-item h3 {
+            font-size: 20px;
+            color: #1f2937;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .daily-item p {
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        .banner {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 18px 35px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        /* Slide 4 - Timeline */
+        #slide4 {
+            background: white;
+        }
+
+        .timeline {
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .t-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .t-year {
+            font-size: 52px;
+            min-width: 120px;
+            font-weight: 700;
+            color: #1e3a8a;
+        }
+
+        .t-content {
+            background: #f8fafc;
+            padding: 18px 22px;
+            border-radius: 10px;
+            border-left: 4px solid #1e3a8a;
+            flex: 1;
+        }
+
+        .t-content h3 {
+            font-size: 18px;
+            color: #1f2937;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .t-content p {
+            font-size: 15px;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+
+        .t-item:nth-child(2) .t-year { color: #dc2626; }
+        .t-item:nth-child(2) .t-content { 
+            border-left-color: #dc2626; 
+            background: #fef2f2;
+        }
+
+        .t-item:nth-child(3) .t-year { color: #7c3aed; }
+        .t-item:nth-child(3) .t-content { border-left-color: #7c3aed; }
+
+        .t-item:nth-child(4) .t-year { color: #f59e0b; }
+        .t-item:nth-child(4) .t-content { border-left-color: #f59e0b; }
+
+        .t-item:last-child .t-year { color: #ef4444; }
+        .t-item:last-child .t-content { 
+            border-left-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        /* Slide 5 - Types */
+        #slide5 {
+            background: white;
+        }
+
+        .types-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 22px;
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        .type-box {
+            background: white;
+            border-radius: 18px;
+            padding: 30px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            position: relative;
+            transition: transform 0.3s;
+            border: 3px solid;
+        }
+
+        .type-box:hover {
+            transform: scale(1.03);
+        }
+
+        .type-box:nth-child(1) { border-color: #1e3a8a; }
+        .type-box:nth-child(2) { border-color: #7c3aed; }
+        .type-box:nth-child(3) { border-color: #ec4899; }
+        .type-box:nth-child(4) { 
+            border-color: #f59e0b; 
+            background: linear-gradient(135deg, #fffbeb, #fef3c7);
+        }
+
+        .new-tag {
+            position: absolute;
+            top: -12px;
+            right: 20px;
+            background: #ef4444;
+            color: white;
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4);
+        }
+
+        .type-box .icon {
+            font-size: 60px;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .type-box h3 {
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 10px;
+            color: #1f2937;
+            font-weight: 700;
+        }
+
+        .type-box .desc {
+            font-size: 16px;
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+
+        .type-box ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .type-box li {
+            font-size: 14px;
+            color: #374151;
+            margin-bottom: 6px;
+            padding-left: 22px;
+            position: relative;
+        }
+
+        .type-box li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .stat-box {
+            margin-top: 25px;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            color: white;
+            padding: 18px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: 600;
+            box-shadow: 0 5px 20px rgba(245, 158, 11, 0.4);
+        }
+
+        /* Slide 6 - Real World */
+        #slide6 {
+            background: white;
+        }
+
+        .examples-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 22px;
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        .ex-box {
+            background: white;
+            border-radius: 15px;
+            padding: 28px;
+            border-left: 8px solid;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .ex-box:nth-child(1) { border-left-color: #ef4444; }
+        .ex-box:nth-child(2) { border-left-color: #1e3a8a; }
+        .ex-box:nth-child(3) { border-left-color: #7c3aed; }
+        .ex-box:nth-child(4) { border-left-color: #10b981; }
+
+        .ex-box .icon {
+            font-size: 45px;
+            margin-bottom: 10px;
+        }
+
+        .ex-box h3 {
+            font-size: 22px;
+            color: #1f2937;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .ex-box .stat {
+            font-size: 26px;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 12px;
+        }
+
+        .ex-box ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .ex-box li {
+            font-size: 15px;
+            color: #4b5563;
+            margin-bottom: 8px;
+            padding-left: 22px;
+            position: relative;
+        }
+
+        .ex-box li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+        }
+
+        /* Slide 7 - Advantages */
+        #slide7 {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        }
+
+        .adv-container {
+            max-width: 1100px;
+            width: 100%;
+        }
+
+        .adv-header {
+            background: linear-gradient(135deg, #1e3a8a, #7c3aed);
+            color: white;
+            padding: 28px;
+            border-radius: 18px;
+            text-align: center;
+            margin-bottom: 28px;
+            box-shadow: 0 10px 30px rgba(30, 58, 138, 0.3);
+        }
+
+        .adv-header h2 {
+            font-size: 38px;
+            margin-bottom: 8px;
+        }
+
+        .adv-header p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+
+        .adv-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 22px;
+        }
+
+        .adv-card {
+            background: white;
+            border-radius: 15px;
+            padding: 28px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border-top: 5px solid;
+        }
+
+        .adv-card:nth-child(1) { border-top-color: #10b981; }
+        .adv-card:nth-child(2) { border-top-color: #2563eb; }
+        .adv-card:nth-child(3) { border-top-color: #7c3aed; }
+        .adv-card:nth-child(4) { border-top-color: #f59e0b; }
+        .adv-card:nth-child(5) { border-top-color: #ec4899; }
+        .adv-card:nth-child(6) { border-top-color: #ef4444; }
+
+        .adv-card .icon {
+            font-size: 45px;
+            margin-bottom: 12px;
+        }
+
+        .adv-card h3 {
+            font-size: 22px;
+            color: #1f2937;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .adv-card p {
+            font-size: 15px;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        /* Slide 8 - Impact */
+        #slide8 {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: white;
+        }
+
+        #slide8 .slide-title {
+            color: white;
+        }
+
+        .impact-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 22px;
+            width: 100%;
+            max-width: 1200px;
+            margin-bottom: 28px;
+        }
+
+        .impact-stat {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            padding: 28px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .impact-stat .num {
+            font-size: 44px;
+            font-weight: 800;
+            color: #fbbf24;
+            margin-bottom: 8px;
+        }
+
+        .impact-stat .label {
+            font-size: 15px;
+            opacity: 0.9;
+        }
+
+        .impact-details {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            padding: 28px;
+            border-radius: 15px;
+        }
+
+        .impact-details h3 {
+            font-size: 26px;
+            color: #fbbf24;
+            margin-bottom: 18px;
+        }
+
+        .impact-details ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .impact-details li {
+            font-size: 17px;
+            margin-bottom: 12px;
+            padding-left: 32px;
+            position: relative;
+        }
+
+        .impact-details li:before {
+            content: "⚡";
+            position: absolute;
+            left: 0;
+            font-size: 20px;
+        }
+
+        /* Slide 9 - Future */
+        #slide9 {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: white;
+        }
+
+        #slide9 .slide-title {
+            color: white;
+        }
+
+        .future-stats {
+            display: flex;
+            gap: 22px;
+            margin-bottom: 28px;
+            max-width: 1100px;
+        }
+
+        .fut-stat {
+            flex: 1;
+            background: linear-gradient(135deg, #2563eb, #1e3a8a);
+            padding: 22px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(37, 99, 235, 0.4);
+        }
+
+        .fut-stat:nth-child(2) {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        }
+
+        .fut-stat:nth-child(3) {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .fut-stat .num {
+            font-size: 44px;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .fut-stat .label {
+            font-size: 15px;
+            opacity: 0.9;
+        }
+
+        .message {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            padding: 22px;
+            border-radius: 15px;
+            margin-bottom: 22px;
+            max-width: 1100px;
+        }
+
+        .message h3 {
+            font-size: 26px;
+            margin-bottom: 15px;
+            color: #fbbf24;
+        }
+
+        .message ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .message li {
+            font-size: 17px;
+            margin-bottom: 8px;
+            padding-left: 28px;
+            position: relative;
+        }
+
+        .message li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .future-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 22px;
+            margin-bottom: 22px;
+            max-width: 1100px;
+        }
+
+        .future-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 18px;
+            border-radius: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .future-item h4 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #60a5fa;
+        }
+
+        .future-item:nth-child(2) h4 {
+            color: #a78bfa;
+        }
+
+        .future-item ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .future-item li {
+            font-size: 15px;
+            margin-bottom: 6px;
+            opacity: 0.9;
+        }
+
+        .cta {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #0f172a;
+            padding: 18px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 26px;
+            font-weight: 800;
+            box-shadow: 0 10px 30px rgba(251, 191, 36, 0.5);
+            max-width: 1100px;
+        }
+
+        /* Navigation */
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            gap: 15px;
+            z-index: 10000;
+        }
+
+        .nav-btn {
+            background: rgba(30, 58, 138, 0.95);
+            color: white;
+            border: 3px solid white;
+            padding: 16px 32px;
+            border-radius: 50px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 700;
+            text-transform: uppercase;
+            box-shadow: 0 8px 20px rgba(30, 58, 138, 0.5);
+        }
+
+        .nav-btn:hover {
+            background: #1e3a8a;
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 12px 30px rgba(30, 58, 138, 0.7);
+        }
+
+        .slide-counter {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 14px 28px;
+            border-radius: 50px;
+            font-size: 18px;
+            z-index: 10000;
+            font-weight: 600;
+            border: 2px solid white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        <!-- Slide 1: Title -->
+        <div class="slide active" id="slide1">
+            <div class="brain-icon">🧠💻</div>
+            <h1>UNDERSTANDING ARTIFICIAL INTELLIGENCE</h1>
+            <h2>A Complete Guide for Everyone</h2>
+            <div class="presenter">Your Name | January 2026</div>
+        </div>
+
+        <!-- Slide 2: Definition -->
+        <div class="slide" id="slide2">
+            <h2 class="slide-title">🤔 What is Artificial Intelligence?</h2>
+            
+            <div class="definition-box">
+                <div class="main-def">
+                    <strong>Artificial Intelligence (AI)</strong> = Making computers think, learn, and make decisions like humans
+                </div>
+                
+                <div class="simple-box">
+                    <h3>💡 In Simple Words</h3>
+                    <p>AI is like teaching a computer to be smart. Just like you learned to recognize faces or understand language, AI learns from examples to do tasks that normally need human intelligence.</p>
+                </div>
+                
+                <div class="caps-grid">
+                    <div class="cap-card">
+                        <div class="icon">👀</div>
+                        <h4>See & Recognize</h4>
+                        <p>Identify faces, objects in images</p>
+                    </div>
+                    <div class="cap-card">
+                        <div class="icon">🗣️</div>
+                        <h4>Understand Language</h4>
+                        <p>Read, write, talk like humans</p>
+                    </div>
+                    <div class="cap-card">
+                        <div class="icon">🧠</div>
+                        <h4>Learn & Improve</h4>
+                        <p>Get better with experience</p>
+                    </div>
+                    <div class="cap-card">
+                        <div class="icon">🎯</div>
+                        <h4>Make Decisions</h4>
+                        <p>Choose best options</p>
+                    </div>
+                    <div class="cap-card">
+                        <div class="icon">🔮</div>
+                        <h4>Predict Future</h4>
+                        <p>Forecast trends, outcomes</p>
+                    </div>
+                    <div class="cap-card">
+                        <div class="icon">⚡</div>
+                        <h4>Work Fast</h4>
+                        <p>Process millions of data points</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Daily Life -->
+        <div class="slide" id="slide3">
+            <h2 class="slide-title">📱 AI in Your Daily Life</h2>
+            
+            <div class="daily-grid">
+                <div class="daily-item">
+                    <div class="emoji">📱</div>
+                    <h3>Your Smartphone</h3>
+                    <p><strong>Face Unlock:</strong> Recognizes your face<br>
+                    <strong>Autocorrect:</strong> Predicts what you type<br>
+                    <strong>Voice:</strong> Siri/Google understands you</p>
+                </div>
+                
+                <div class="daily-item">
+                    <div class="emoji">📺</div>
+                    <h3>Entertainment</h3>
+                    <p><strong>Netflix:</strong> Recommends shows you'll love<br>
+                    <strong>Spotify:</strong> Creates playlists for you<br>
+                    <strong>Gaming:</strong> Smart opponents</p>
+                </div>
+                
+                <div class="daily-item">
+                    <div class="emoji">🗺️</div>
+                    <h3>Navigation</h3>
+                    <p><strong>Google Maps:</strong> Fastest routes<br>
+                    <strong>Traffic:</strong> Predicts delays<br>
+                    <strong>Uber:</strong> Matches drivers efficiently</p>
+                </div>
+                
+                <div class="daily-item">
+                    <div class="emoji">🛒</div>
+                    <h3>Shopping</h3>
+                    <p><strong>Amazon:</strong> Product recommendations<br>
+                    <strong>Prices:</strong> Smart alerts<br>
+                    <strong>Security:</strong> Fraud detection</p>
+                </div>
+                
+                <div class="daily-item">
+                    <div class="emoji">📧</div>
+                    <h3>Email</h3>
+                    <p><strong>Gmail:</strong> Filters spam<br>
+                    <strong>Smart Replies:</strong> Quick responses<br>
+                    <strong>Translation:</strong> Breaks barriers</p>
+                </div>
+                
+                <div class="daily-item">
+                    <div class="emoji">📸</div>
+                    <h3>Photography</h3>
+                    <p><strong>Portrait:</strong> AI blurs background<br>
+                    <strong>Search:</strong> Find photos by content<br>
+                    <strong>Enhancement:</strong> Auto-improves</p>
+                </div>
+            </div>
+            
+            <div class="banner">
+                💫 You interact with AI 50+ times every day!
+            </div>
+        </div>
+
+        <!-- Slide 4: Timeline -->
+        <div class="slide" id="slide4">
+            <h2 class="slide-title">⏰ The Journey of AI</h2>
+            
+            <div class="timeline">
+                <div class="t-item">
+                    <div class="t-year">1950</div>
+                    <div class="t-content">
+                        <h3>💭 The Dream Begins</h3>
+                        <p>Alan Turing asks: "Can machines think?" - First AI programs created, computers could play checkers</p>
+                    </div>
+                </div>
+                
+                <div class="t-item">
+                    <div class="t-year">1950-1997</div>
+                    <div class="t-content">
+                        <h3>❄️ The AI Winter - Why Progress Was Slow</h3>
+                        <p><strong>Computers too weak:</strong> Not enough processing power • <strong>No data:</strong> No internet to learn from • <strong>Too expensive:</strong> Only big labs could afford it • <strong>Result:</strong> AI stayed in research labs for 40+ years</p>
+                    </div>
+                </div>
+                
+                <div class="t-item">
+                    <div class="t-year">2000s</div>
+                    <div class="t-content">
+                        <h3>🚀 The Breakthrough</h3>
+                        <p>Internet provides massive data, computers get powerful, AI enters real products - Siri, Netflix recommendations, spam filters</p>
+                    </div>
+                </div>
+                
+                <div class="t-item">
+                    <div class="t-year">2010-2020</div>
+                    <div class="t-content">
+                        <h3>📈 AI Everywhere</h3>
+                        <p>Face recognition, self-driving cars, Alexa, voice assistants become common in daily life</p>
+                    </div>
+                </div>
+                
+                <div class="t-item">
+                    <div class="t-year">2025</div>
+                    <div class="t-content">
+                        <h3>🎯 The AI Revolution NOW</h3>
+                        <p>ChatGPT (Nov 2022) - 100M users in 2 months! AI creates images, writes code, makes videos, and now AI Agents can complete entire jobs independently</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Types -->
+        <div class="slide" id="slide5">
+            <h2 class="slide-title">🎨 4 Types of AI</h2>
+            
+            <div class="types-grid">
+                <div class="type-box">
+                    <div class="icon">🎯</div>
+                    <h3>Narrow AI</h3>
+                    <p class="desc">Does ONE specific thing very well</p>
+                    <ul>
+                        <li>Email spam filters</li>
+                        <li>Face ID on your phone</li>
+                        <li>Netflix recommendations</li>
+                        <li>Google Maps navigation</li>
+                    </ul>
+                </div>
+                
+                <div class="type-box">
+                    <div class="icon">💬</div>
+                    <h3>Conversational AI</h3>
+                    <p class="desc">Talks and understands like humans</p>
+                    <ul>
+                        <li>ChatGPT - Answers questions</li>
+                        <li>Siri/Alexa - Voice assistants</li>
+                        <li>Customer service chatbots</li>
+                        <li>Virtual assistants</li>
+                    </ul>
+                </div>
+                
+                <div class="type-box">
+                    <div class="icon">🎨</div>
+                    <h3>Generative AI</h3>
+                    <p class="desc">Creates new content from scratch</p>
+                    <ul>
+                        <li>Creates images (DALL-E, Midjourney)</li>
+                        <li>Writes articles, code, stories</li>
+                        <li>Generates music and videos</li>
+                        <li>Designs logos and artwork</li>
+                    </ul>
+                </div>
+                
+                <div class="type-box">
+                    <span class="new-tag">NEW 2025!</span>
+                    <div class="icon">🤖</div>
+                    <h3>Agentic AI</h3>
+                    <p class="desc">Works independently to complete complex tasks</p>
+                    <ul>
+                        <li>Plans multi-step workflows</li>
+                        <li>Makes decisions autonomously</li>
+                        <li>Uses multiple tools/apps</li>
+                        <li>Completes entire jobs without human supervision</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="stat-box">
+                📊 Prediction: 33% of business software will have AI agents by 2028
+            </div>
+        </div>
+
+        <!-- Slide 6: Real World Examples -->
+        <div class="slide" id="slide6">
+            <h2 class="slide-title">🌍 Real-World Impact & Examples</h2>
+            
+            <div class="examples-grid">
+                <div class="ex-box">
+                    <div class="icon">🏥</div>
+                    <h3>Healthcare</h3>
+                    <div class="stat">94% Accuracy</div>
+                    <ul>
+                        <li>AI detects lung cancer better than doctors (94% vs 65%)</li>
+                        <li>223 FDA-approved AI medical devices in 2023</li>
+                        <li>Reads X-rays, MRIs in seconds</li>
+                        <li>Helps discover new medicines faster</li>
+                    </ul>
+                </div>
+                
+                <div class="ex-box">
+                    <div class="icon">💼</div>
+                    <h3>Business</h3>
+                    <div class="stat">30-50% Faster</div>
+                    <ul>
+                        <li>78% of organizations now use AI</li>
+                        <li>Processes run 30-50% faster</li>
+                        <li>Automates routine tasks completely</li>
+                        <li>Saves $150B annually in efficiency</li>
+                    </ul>
+                </div>
+                
+                <div class="ex-box">
+                    <div class="icon">🎧</div>
+                    <h3>Customer Service</h3>
+                    <div class="stat">70-80% Resolution</div>
+                    <ul>
+                        <li>Klarna AI: 2.3M conversations/month</li>
+                        <li>Replaces 700 full-time agents</li>
+                        <li>80% of teams will use AI by end of 2025</li>
+                        <li>Available 24/7, instant responses</li>
+                    </ul>
+                </div>
+                
+                <div class="ex-box">
+                    <div class="icon">🚗</div>
+                    <h3>Transportation</h3>
+                    <div class="stat">150,000 Rides/Week</div>
+                    <ul>
+                        <li>Waymo: 150,000 autonomous rides weekly</li>
+                        <li>Self-driving cars learning rapidly</li>
+                        <li>AI optimizes traffic flow in cities</li>
+                        <li>Predicts maintenance needs in vehicles</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Advantages -->
+        <div class="slide" id="slide7">
+            <h2 class="slide-title">⭐ Key Advantages of AI</h2>
+            
+            <div class="adv-container">
+                <div class="adv-header">
+                    <h2>Why AI Matters</h2>
+                    <p>6 game-changing benefits transforming how we work and live</p>
+                </div>
+                
+                <div class="adv-grid">
+                    <div class="adv-card">
+                        <div class="icon">🌙</div>
+                        <h3>24/7 Availability</h3>
+                        <p>AI never sleeps, gets tired, or needs breaks. Works continuously around the clock to serve customers and complete tasks.</p>
+                    </div>
+                    
+                    <div class="adv-card">
+                        <div class="icon">🎯</div>
+                        <h3>Extreme Accuracy</h3>
+                        <p>No human errors, no distractions. AI performs tasks with 99%+ consistency, especially in repetitive operations.</p>
+                    </div>
+                    
+                    <div class="adv-card">
+                        <div class="icon">💰</div>
+                        <h3>Massive Cost Savings</h3>
+                        <p>AI could add $15.7 trillion to the global economy by 2030. Reduces operational costs by 30-50% in many industries.</p>
+                    </div>
+                    
+                    <div class="adv-card">
+                        <div class="icon">⚡</div>
+                        <h3>Super Speed</h3>
+                        <p>Processes millions of data points in seconds. Tasks that took hours now take minutes. Decisions made in real-time.</p>
+                    </div>
+                    
+                    <div class="adv-card">
+                        <div class="icon">📈</div>
+                        <h3>Continuous Learning</h3>
+                        <p>Gets smarter over time from every interaction. Adapts to new patterns and improves performance automatically.</p>
+                    </div>
+                    
+                    <div class="adv-card">
+                        <div class="icon">🌍</div>
+                        <h3>Solves Big Problems</h3>
+                        <p>Tackles climate change, cures diseases, predicts disasters. Solves challenges too complex for human brains alone.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Global Impact -->
+        <div class="slide" id="slide8">
+            <h2 class="slide-title">🌐 The Global AI Impact</h2>
+            
+            <div class="impact-stats">
+                <div class="impact-stat">
+                    <div class="num">$15.7T</div>
+                    <div class="label">Added to global economy by 2030</div>
+                </div>
+                
+                <div class="impact-stat">
+                    <div class="num">78%</div>
+                    <div class="label">Of organizations using AI in 2024</div>
+                </div>
+                
+                <div class="impact-stat">
+                    <div class="num">$109B</div>
+                    <div class="label">U.S. private AI investment in 2024</div>
+                </div>
+            </div>
+            
+            <div class="impact-details">
+                <h3>🚀 How AI is Transforming the World</h3>
+                <ul>
+                    <li><strong>Economic Growth:</strong> Creating entirely new industries and business models</li>
+                    <li><strong>Job Transformation:</strong> 64% say AI enables innovation in their roles</li>
+                    <li><strong>Healthcare Revolution:</strong> Saving $150B annually through early diagnosis and efficiency</li>
+                    <li><strong>Climate Action:</strong> Optimizing energy use, predicting weather patterns, reducing waste</li>
+                    <li><strong>Education Access:</strong> Personalized learning for every student, anywhere in the world</li>
+                    <li><strong>Scientific Breakthroughs:</strong> Accelerating drug discovery, material science, space exploration</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 9: Future -->
+        <div class="slide" id="slide9">
+            <h2 class="slide-title">🚀 The Future Starts NOW</h2>
+            
+            <div class="future-stats">
+                <div class="fut-stat">
+                    <div class="num">$826B</div>
+                    <div class="label">AI market by 2030</div>
+                </div>
+                
+                <div class="fut-stat">
+                    <div class="num">90%</div>
+                    <div class="label">Of companies will use AI</div>
+                </div>
+                
+                <div class="fut-stat">
+                    <div class="num">33%</div>
+                    <div class="label">Software with AI agents by 2028</div>
+                </div>
+            </div>
+            
+            <div class="message">
+                <h3>💡 The Bottom Line</h3>
+                <ul>
+                    <li>AI is a teammate, not a replacement - it handles boring tasks so you can focus on creative, meaningful work</li>
+                    <li>Companies using AI gain 3-5 years competitive advantage over those who wait</li>
+                    <li>AI won't replace humans, but humans who use AI will replace those who don't</li>
+                </ul>
+            </div>
+            
+            <div class="future-grid">
+                <div class="future-item">
+                    <h4>🎯 What You Can Use TODAY</h4>
+                    <ul>
+                        <li>✓ ChatGPT for writing, brainstorming</li>
+                        <li>✓ AI meeting transcription & summaries</li>
+                        <li>✓ Smart email filtering & responses</li>
+                        <li>✓ AI-powered data analysis</li>
+                    </ul>
+                </div>
+                
+                <div class="future-item">
+                    <h4>🔮 Coming Very Soon</h4>
+                    <ul>
+                        <li>→ AI agents running entire workflows</li>
+                        <li>→ Personalized AI assistants for every employee</li>
+                        <li>→ Real-time language translation everywhere</li>
+                        <li>→ AI-first business processes</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="cta">
+                ⚡ THE TIME TO START IS NOW! ⚡
+            </div>
+        </div>
+    </div>
+
+    <div class="navigation">
+        <button class="nav-btn" id="prevBtn">← PREVIOUS</button>
+        <button class="nav-btn" id="nextBtn">NEXT →</button>
+    </div>
+
+    <div class="slide-counter" id="slideCounter">1 / 9</div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const slideCounter = document.getElementById('slideCounter');
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            slideCounter.textContent = `${currentSlide + 1} / ${totalSlides}`;
+            
+            // Update button states
+            prevBtn.style.opacity = currentSlide === 0 ? '0.5' : '1';
+            nextBtn.style.opacity = currentSlide === totalSlides - 1 ? '0.5' : '1';
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                showSlide(currentSlide + 1);
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                showSlide(currentSlide - 1);
+            }
+        }
+
+        prevBtn.addEventListener('click', prevSlide);
+        nextBtn.addEventListener('click', nextSlide);
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                prevSlide();
+            }
+        });
+
+        // Initialize
+        showSlide(0);
+    </script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+{
+  "name": "sap-sage",
+  "private": true,
+  "version": "1.0.0",
+  "description": "SAP Sage - Full Spectrum SAP Intelligence Platform",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "dev:all": "concurrently \"npm run dev\" \"cd backend && node server.js\"",
+    "setup": "bash scripts/setup.sh",
+    "migrate": "node scripts/migrate.js",
+    "refresh-knowledge": "node scripts/knowledge-refresh.js",
+    "deploy": "bash scripts/deploy.sh",
+    "health": "node scripts/health-check.js"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.1",
+    "concurrently": "^8.2.2",
+    "vite": "^5.4.2"
+  }
+}

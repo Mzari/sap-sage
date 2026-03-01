@@ -1,0 +1,7 @@
+{
+  "name": "installed-nodes",
+  "private": true,
+  "dependencies": {
+    "n8n-nodes-sap": "0.1.3"
+  }
+}
