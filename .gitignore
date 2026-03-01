@@ -9,3 +9,5 @@ backend/node_modules/
 Thumbs.db
 .vscode/
 *.zip
+sap-sage/n8n/database.sqlite 
+*.sqlite 
