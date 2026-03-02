@@ -11,13 +11,16 @@ const PORT = process.env.PORT || 3001;
 
 // ─── CORS ─────────────────────────────────────────────────────────────────────
 app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'http://localhost:4173',
-    process.env.VITE_API_URL || '',
-    /\.vercel\.app$/,
-    /\.railway\.app$/,
-  ].filter(Boolean),
+  origin: function(origin, callback) {
+    if (!origin) return callback(null, true);
+    if (
+      origin.includes('localhost') ||
+      origin.includes('vercel.app') ||
+      origin.includes('railway.app') ||
+      origin === process.env.FRONTEND_URL
+    ) return callback(null, true);
+    callback(new Error('CORS blocked'));
+  },
   credentials: true,
 }));
 app.use(express.json({ limit: '2mb' }));
@@ -541,3 +544,4 @@ initDB().then(() => {
     console.log(`[SAP Sage Backend] Dynamic connections: enabled (via frontend sapConnections)`);
   });
 });
+
